@@ -1,0 +1,50 @@
+message OddsItem {
+
+optional int32 eventPartId=1;
+optional int32 priArgumentNeedToDelete=2;
+optional int32 leagueId=3;
+optional string oddsValuesMated=4;
+optional string oddsValue=5;
+optional string homeTeamArgument=6;
+optional int32 matchId=7;
+optional int32 isVisible=8;
+optional int32 optionNum=9;
+optional int32 sportId=10;
+optional int32 isInLive=11;
+optional string marketName=12;
+optional string marketFullId=13;
+optional string optionName=14;
+optional int32 marketId=15;
+optional string marketType=16;
+optional int32 mSort=17;
+optional bool isActive=18;
+optional string isPrimeArgument=19;
+optional int32 oddsId=20;
+optional int32 isShowOptionName_detail=21;
+optional int32 isShowOptionName_list=22;
+optional int32 matchPeriodId=23;
+optional string argument=24;
+optional int32 periodNum=25;
+optional int32 dataType=26;
+optional PrimeArgumentProto PrimeArgumentProto=27;
+}
+message PrimeArgumentProto {  
+optional int32 correspondingMarketId=1;
+optional int32 mSort=2;
+optional string marketName=3;
+optional int32 marketId=4;
+optional string priArgument=5;
+
+}
+message OptionProto {  
+optional int32 partnerId=1;
+optional int32 isVisible=2;
+optional int32 optionNum=3;
+optional int32 marketId=4;
+optional int32 oddsId=5;
+optional int32 matchPeriodId=6;
+optional string oddsValue=7;
+optional string marketFullId=8;
+optional string optionName=9;
+optional string argument=10;
+} 

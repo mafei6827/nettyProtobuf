@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="js/Long.min.js"></script>
+    <script type="text/javascript" src="js/ByteBufferAB.min.js"></script>
+    <script type="text/javascript" src="js/ProtoBuf.min.js"></script>
+</head>
+<body>
+
+</body>
+
+<script type="text/javascript">
+    if (typeof dcodeIO === 'undefined' || !dcodeIO.ProtoBuf) {
+        console.log("errror")
+    }
+    var ProtoBuf = dcodeIO.ProtoBuf;
+    var builder = ProtoBuf.loadProtoFile("./js/OddsItemProto.proto");
+    var OddsItem = builder.build("OddsItem");
+    console.log(OddsItem)
+
+    var websocket = null;
+    if ('WebSocket' in window) {
+        websocket = new WebSocket("ws://192.168.2.48:9031/webSocket/list");
+        websocket.binaryType = "arraybuffer";  //这里注意一下，不然使用protobuf时前端瘦到的类型为blob类型
+        websocket.onerror = function () {
+            console.log("errror")
+        };
+        websocket.onopen = function () {
+            if (websocket.readyState == WebSocket.OPEN) {
+                console.log("success");
+            } else {
+                console.log("websocket state is:" + websocket.readyState);
+            }
+        };
+        websocket.onmessage = function (event) {
+            if (event.data instanceof ArrayBuffer) {
+                console.log("the event.data is an ArrayBuffer");  //如果后端发送的是二进制帧（protobuf）会收到前面定义的类型
+                //var decodeMsgPersonModule = OddsItem.decode(event.data);                     //msg为websocket的onmessage接收到的event.data（ArrayBuffer）
+                //console.log(decodeMsgPersonModule.id);
+                var unit8 = new Uint8Array(event.data);
+                var str = byteToString(unit8);
+                console.log(str)
+                var decodeMsgPersonModule = OddsItem.decode(unit8);                     //msg为websocket的onmessage接收到的event.data（ArrayBuffer）
+                console.log(decodeMsgPersonModule.id);
+            } else {
+                console.log(event.data);  //后端返回的是文本帧时触发
+                if(event.data != 'ping'){
+
+                    var bytes = stringToByte(event.data);
+                    var decodeMsgPersonModule = OddsItem.decode(bytes);                     //msg为websocket的onmessage接收到的event.data（ArrayBuffer）
+                    console.log(decodeMsgPersonModule.id);
+                }
+
+            }
+        }
+        websocket.onclose = function () {
+            console.log("连接关闭")
+        }
+    }
+
+    function stringToUint(string) {
+        var string = btoa(unescape(encodeURIComponent(string))),
+            charList = string.split(''),
+            uintArray = [];
+        for (var i = 0; i < charList.length; i++) {
+            uintArray.push(charList[i].charCodeAt(0));
+        }
+        return new Uint8Array(uintArray);
+    }
+
+    function uintToString(uintArray) {
+        var encodedString = String.fromCharCode.apply(null, uintArray),
+            decodedString = decodeURIComponent(escape(atob(encodedString)));
+        return decodedString;
+    }
+
+
+    function stringToByte(str) {
+        var bytes = new Array();
+        var len, c;
+        len = str.length;
+        for(var i = 0; i < len; i++) {
+            c = str.charCodeAt(i);
+            if(c >= 0x010000 && c <= 0x10FFFF) {
+                bytes.push(((c >> 18) & 0x07) | 0xF0);
+                bytes.push(((c >> 12) & 0x3F) | 0x80);
+                bytes.push(((c >> 6) & 0x3F) | 0x80);
+                bytes.push((c & 0x3F) | 0x80);
+            } else if(c >= 0x000800 && c <= 0x00FFFF) {
+                bytes.push(((c >> 12) & 0x0F) | 0xE0);
+                bytes.push(((c >> 6) & 0x3F) | 0x80);
+                bytes.push((c & 0x3F) | 0x80);
+            } else if(c >= 0x000080 && c <= 0x0007FF) {
+                bytes.push(((c >> 6) & 0x1F) | 0xC0);
+                bytes.push((c & 0x3F) | 0x80);
+            } else {
+                bytes.push(c & 0xFF);
+            }
+        }
+        return bytes;
+
+
+    }
+
+
+    function byteToString(arr) {
+        if(typeof arr === 'string') {
+            return arr;
+        }
+        var str = '',
+            _arr = arr;
+        for(var i = 0; i < _arr.length; i++) {
+            var one = _arr[i].toString(2),
+                v = one.match(/^1+?(?=0)/);
+            if(v && one.length == 8) {
+                var bytesLength = v[0].length;
+                var store = _arr[i].toString(2).slice(7 - bytesLength);
+                for(var st = 1; st < bytesLength; st++) {
+                    store += _arr[st + i].toString(2).slice(2);
+                }
+                str += String.fromCharCode(parseInt(store, 2));
+                i += bytesLength - 1;
+            } else {
+                str += String.fromCharCode(_arr[i]);
+            }
+        }
+        return str;
+    }
+</script>
+
+
+</html>
