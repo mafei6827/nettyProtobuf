@@ -1,13 +1,11 @@
 package com.rminfo.server.protoTest.protobuf;
 
 import com.alibaba.fastjson.JSON;
-import com.baidu.bjf.remoting.protobuf.ProtobufIDLGenerator;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.rminfo.protobuf.item.DgtKafkaDto;
 import com.rminfo.protobuf.item.MatchItemProto;
-import com.rminfo.protobuf.item.MatchItemProto0;
 import com.rminfo.protobuf.item.OddsItemProto;
 
 import java.util.HashMap;
@@ -43,6 +41,7 @@ public class TestJProtoBuf {
     private static OddsItemProto.OddsItem decodeOdds(byte[] body) throws InvalidProtocolBufferException {
         return OddsItemProto.OddsItem.parseFrom(body);
     }
+
     private static MatchItemProto.MatchItem decodeMatch(byte[] body) throws InvalidProtocolBufferException {
         return MatchItemProto.MatchItem.parseFrom(body);
     }
@@ -202,23 +201,21 @@ public class TestJProtoBuf {
         }
         if (dto.getContent().getBaseData().containsKey("competitors")) {
             List<Map<String, Object>> competitors = (List<Map<String, Object>>) dto.getBaseDatas("competitors");
-            for (int i = 0; i < competitors.size(); i++) {
-                Map<String, Object> competitor = competitors.get(i);
+            for (Map<String, Object> competitor : competitors) {
                 for (String key : competitor.keySet()) {
-                    builder2.setField(fields2.get(key), dto.getBaseDatas(key));
+                    builder2.setField(fields2.get(key), competitor.get(key));
                 }
-                builder.setCompetitors(i, builder2.build());
+                builder.addCompetitors(builder2.build());
                 builder2.clear();
             }
         }
         if (dto.getContent().getBaseData().containsKey("marketTypes")) {
             List<Map<String, Object>> marketTypes = (List<Map<String, Object>>) dto.getBaseDatas("marketTypes");
-            for (int i = 0; i < marketTypes.size(); i++) {
-                Map<String, Object> marketType = marketTypes.get(i);
+            for (Map<String, Object> marketType : marketTypes) {
                 for (String key : marketType.keySet()) {
-                    builder3.setField(fields3.get(key), dto.getBaseDatas(key));
+                    builder3.setField(fields3.get(key), marketType.get(key));
                 }
-                builder.setMarketTypes(i, builder3.build());
+                builder.addMarketTypes(builder3.build());
                 builder3.clear();
             }
         }
@@ -242,9 +239,9 @@ public class TestJProtoBuf {
 
         System.out.println("cost time: " + (System.currentTimeMillis() - start) / 1000 + "ms");
 
-        String code = ProtobufIDLGenerator.getIDL(MatchItemProto0.class);
+/*        String code = ProtobufIDLGenerator.getIDL(MatchItemProto0.class);
         System.out.println(code);
-        code = ProtobufIDLGenerator.getIDL(SimpleTypeTest.class);
+        code = ProtobufIDLGenerator.getIDL(SimpleTypeTest.class);*/
         //System.out.println(code);
     }
 }

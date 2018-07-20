@@ -30,4 +30,3 @@ nbdist/
 
 ### others ###
 .DS_Store
-src/main/resources/
